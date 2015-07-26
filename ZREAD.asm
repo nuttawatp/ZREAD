@@ -1,0 +1,57 @@
+STACK_SEG SEGMENT
+    DB 100 DUP(0)
+STACK_SEG ENDS
+DATA_SEG SEGMENT
+         FILENAME DB 'DATA.TXT',0
+         BUFFER DB 100  DUP(0)
+         HANDLE DW ?
+DATA_SEG ENDS
+CODE_SEG SEGMENT
+         ASSUME CS:CODE_SEG,DS:DATA_SEG
+BEGIN:
+        CALL MAIN
+        MOV AH,0H
+        INT 16H
+        MOV AH,4CH
+        INT 21H
+PRINT_ME PROC
+NEXT_CHAR:
+        CMP [SI],0
+        JE STOP
+        MOV AL,[SI]
+        MOV AH,0EH
+        INT 10H
+        INC SI
+        JMP NEXT_CHAR
+STOP:
+        RET
+PRINT_ME ENDP
+
+MAIN   PROC
+
+       MOV DX,SEG FILENAME
+       MOV DS,DX
+       MOV DX,OFFSET FILENAME
+       MOV AH,3DH
+       MOV AL,02H
+       INT 21H
+       MOV HANDLE,AX
+
+       MOV BX,HANDLE
+       MOV CX,38D
+       MOV DX,SEG BUFFER
+       MOV DS,DX
+       MOV DX,OFFSET BUFFER
+       MOV AH,3FH
+       INT 21H
+
+       MOV BX,HANDLE
+       MOV AH,3EH
+       INT 21H
+
+       MOV SI,OFFSET BUFFER
+       CALL PRINT_ME
+       RET
+MAIN  ENDP
+CODE_SEG  ENDS
+   END BEGIN
